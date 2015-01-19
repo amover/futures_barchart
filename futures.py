@@ -28,7 +28,7 @@ class barChart():
 		df.Time = pd.to_datetime(df.Time)
 		df.index.names=['Strike']
 		df.reset_index(inplace=True)
-		df.set_index(['Time','Contract','Strike'])
+		df.set_index(['Time','Contract','Strike'],inplace=True)
 		
 		self.df = df
 		self.filename=filename
@@ -47,7 +47,7 @@ class barChart():
 		
 	def load(self):
 		self.all=pd.read_csv(self.filename)
-		self.all.set_index(['Time','Contract','Strike'])
+		self.all.set_index(['Time','Contract','Strike'],inplace=True)
 		return len(self.all)
 
 if __name__ == "__main__":
@@ -62,12 +62,13 @@ if __name__ == "__main__":
 	if hasattr(main, '__file__') or "__IPYTHON__" in dir() or args.chart:
 		f=plt.figure()
 		ax=f.gca()
-		bc.df.Last.plot(ax=ax)
+		dfp = bc.df.reset_index()
+		dfp.Last.plot(ax=ax)
 		ax.xaxis.set_major_locator(MultipleLocator(2))
 		locs, labels = plt.xticks()
-		plt.xticks(locs, list(bc.df.Contract[::2]))
+		plt.xticks(locs, list(dfp.Contract[::2]))
 		plt.setp(labels, rotation=90)
-		plt.fill_between(bc.df.index.values,bc.df.Low.values,bc.df.High.values,alpha=0.3,color='r')
+		plt.fill_between(dfp.index.values,dfp.Low.values,dfp.High.values,alpha=0.3,color='r')
 		plt.ion()
 	if args.update:
 		print "Saved %i records" % bc.save()
