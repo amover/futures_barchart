@@ -28,13 +28,14 @@ class barChart():
 		df.Time = pd.to_datetime(df.Time)
 		df.index.names=['Strike']
 		df.reset_index(inplace=True)
-		df.set_index(['Time','Contract','Strike'],inplace=True)
+		df['Time'] = df['Time'].values.astype('datetime64[D]')
+		df=df.set_index(['Time','Contract','Strike'])
 		
 		self.df = df
 		self.filename=filename
 		try:
 			print "Loaded %i records" % self.load()
-			#~ self.all.append(self.df)
+			self.all.append(self.df)
 		except IOError:
 			print "File load failed", filename
 			self.all = df
@@ -42,7 +43,7 @@ class barChart():
 
 		
 	def save(self):
-		self.all.to_csv(self.filename)
+		self.all.to_csv(self.filename,index_col=0)
 		return len(self.df)
 		
 	def load(self):
@@ -62,13 +63,12 @@ if __name__ == "__main__":
 	if hasattr(main, '__file__') or "__IPYTHON__" in dir() or args.chart:
 		f=plt.figure()
 		ax=f.gca()
-		dfp = bc.df.reset_index()
-		dfp.Last.plot(ax=ax)
+		bc.df.Last.plot(ax=ax)
 		ax.xaxis.set_major_locator(MultipleLocator(2))
 		locs, labels = plt.xticks()
-		plt.xticks(locs, list(dfp.Contract[::2]))
+		plt.xticks(locs, list(bc.df.Contract[::2]))
 		plt.setp(labels, rotation=90)
-		plt.fill_between(dfp.index.values,dfp.Low.values,dfp.High.values,alpha=0.3,color='r')
+		plt.fill_between(bc.df.index.values,bc.df.Low.values,bc.df.High.values,alpha=0.3,color='r')
 		plt.ion()
 	if args.update:
 		print "Saved %i records" % bc.save()
